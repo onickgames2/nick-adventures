@@ -1,1 +1,201 @@
-soon.
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Roblox Loading System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body, html { 
+            width: 100%; height: 100%; 
+            overflow: hidden; background-color: #000;
+            font-family: sans-serif;
+        }
+
+        /* Container Principal */
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* --- IMAGENS FIXAS/PERSISTENTES --- */
+        
+        /* Logo do Jogo (Canto Superior Direito) - Parada */
+        #game-logo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 180px;
+            z-index: 100; /* Sempre visível acima de quase tudo */
+        }
+
+        /* Logo do Roblox (Canto Inferior Direito) - Girando */
+        #roblox-icon {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            z-index: 100;
+            animation: spin 6s linear infinite;
+            display: none; /* Começa escondida, aparece no momento certo */
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- TELAS --- */
+
+        /* 1. Banner de Loading (Inicial) */
+        #screen-loading {
+            position: absolute;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image: url('https://litter.catbox.moe/2q4b2b671yvnpmzl.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* 2. Tela Levando pro Mapa (Fade In depois) */
+        #screen-map {
+            position: absolute;
+            inset: 0;
+            z-index: 40;
+            display: none; /* Invisível no início */
+            background-image: url('https://xrwaej0jor324euf.png'); /* Corrigindo com o link que você mandou */
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Botões */
+        .btn {
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #fff;
+            cursor: pointer;
+            text-transform: uppercase;
+            border-radius: 8px;
+        }
+
+        #btn-skip { margin-top: 300px; display: none; }
+
+        /* Overlay para o Fade Out final */
+        #black-out {
+            position: absolute;
+            inset: 0;
+            background: black;
+            z-index: 200;
+            display: none;
+            opacity: 0;
+        }
+
+        /* Logo Central que pula */
+        #logo-jump {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 300px;
+            z-index: 210;
+        }
+
+        @keyframes jumpEffect {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .animate-jump { animation: jumpEffect 0.5s ease-out forwards; }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <img id="game-logo" src="https://litter.catbox.moe/ovi5hnlbrreugile.png">
+        <img id="roblox-icon" src="https://litter.catbox.moe/l8qpbpazqhd18wxy.png">
+
+        <div id="screen-loading">
+            <button id="btn-skip" class="btn">Pular Loading</button>
+        </div>
+
+        <div id="screen-map">
+            <button id="btn-start" class="btn" onclick="triggerFinalTransition()">Iniciar</button>
+        </div>
+
+        <div id="black-out"></div>
+        <img id="logo-jump" src="https://litter.catbox.moe/ovi5hnlbrreugile.png">
+    </div>
+
+    <script>
+        const screenLoading = document.getElementById('screen-loading');
+        const screenMap = document.getElementById('screen-map');
+        const btnSkip = document.getElementById('btn-skip');
+        const robloxIcon = document.getElementById('roblox-icon');
+        const blackOut = document.getElementById('black-out');
+        const logoJump = document.getElementById('logo-jump');
+
+        // 1. Logica do Botão Pular (Aparece após 4 segundos)
+        setTimeout(() => {
+            btnSkip.style.display = 'block';
+        }, 4000);
+
+        // 2. Ao clicar em Pular ou quando o loading "acabar"
+        btnSkip.addEventListener('click', () => {
+            // Escurece a tela
+            blackOut.style.display = 'block';
+            blackOut.style.opacity = '1';
+            blackOut.style.transition = 'opacity 0.5s';
+
+            setTimeout(() => {
+                // Logo pula no centro
+                logoJump.classList.add('animate-jump');
+                
+                setTimeout(() => {
+                    // Fade out do preto e da logo central
+                    blackOut.style.opacity = '0';
+                    logoJump.style.display = 'none';
+                    screenLoading.style.display = 'none';
+                    
+                    // Mostra a tela do mapa com Fade In
+                    screenMap.style.display = 'flex';
+                    setTimeout(() => { 
+                        screenMap.style.opacity = '1'; 
+                        // A logo do Roblox aparece e gira agora
+                        robloxIcon.style.display = 'block';
+                    }, 50);
+
+                }, 1200);
+            }, 500);
+        });
+
+        // 3. Botão Iniciar (Transição final)
+        function triggerFinalTransition() {
+            // Aqui você pode adicionar o fade out final para o jogo
+            screenMap.style.opacity = '0';
+            setTimeout(() => {
+                alert("Indo para o Mapa...");
+                // Aqui entraria o teleporte do Roblox
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
+
+```
+
